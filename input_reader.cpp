@@ -118,7 +118,33 @@ void InputReader::ParseLine(std::string_view line)
     }
 }
 
-void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue &catalogue) const
+void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) const
 {
-    // Реализуйте метод самостоятельно
+    std::sort(commands_.begin(), commands_.end(),
+    [](const CommandDescription& lhs, const CommandDescription& rhs){
+        if(lhs.command == "Stop") return true;
+        if (lhs.command == "Bus" && rhs.command == "Stop") return false;
+        if (lhs.command == "Bus" && rhs.command == "Bus") return lhs.command < rhs.command;
+    });
+
+    for(const CommandDescription& command : commands_)
+    {
+        if(command.command == "Stop")
+        {
+            Stop stop{command.id, ParseCoordinates(command.description)};
+            catalogue.AddStop(std::move(stop));
+        }
+        if (command.command == "Bus")
+        {
+            std::vector<std::string_view> route = ParseRoute(command.description);
+
+            std::vector<Stop*> stops;
+            for (const auto stop_name : route)
+            {
+                stops.push_back(catalogue.GetStopByName(stop_name));
+            }
+            Bus bus{command.id, stops};
+            catalogue.AddBus(std::move(bus));
+        }
+    }
 }

@@ -21,6 +21,11 @@ struct Bus
 class TransportCatalogue
 {
   public:
+    void AddStop(Stop&& stop);
+    void AddBus(Bus&& bus);
+    Stop* GetStopByName(std::string_view stop_name) const;
+    Bus* GetBusByName(std::string_view) const;
+
   private:
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
