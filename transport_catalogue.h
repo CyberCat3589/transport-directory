@@ -12,10 +12,17 @@ struct Stop
     Coordinates coordinates;
 };
 
+enum class RouteType
+{
+    Ring, //кольцевой маршрут
+    ThereAndback //маршрут туда-обратно
+};
+
 struct Bus
 {
     std::string name;
     std::vector<Stop*> stops;
+    RouteType type;
 };
 
 class TransportCatalogue
@@ -24,11 +31,11 @@ class TransportCatalogue
     void AddStop(Stop&& stop);
     void AddBus(Bus&& bus);
     Stop* GetStopByName(std::string_view stop_name) const;
-    Bus* GetBusByName(std::string_view) const;
+    Bus* GetBusByName(std::string_view bus_name) const;
 
   private:
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
     std::unordered_map<std::string_view, Stop*> stopname_to_stop_;
-    std::unordered_map<std::string_view, Bus*> busname_to_bus;
+    std::unordered_map<std::string_view, Bus*> busname_to_bus_;
 };

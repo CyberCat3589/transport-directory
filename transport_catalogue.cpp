@@ -11,7 +11,7 @@ void TransportCatalogue::AddBus(Bus&& bus)
 {
     buses_.push_back(std::move(bus));
     Bus* ptr_bus = &buses_[buses_.size() - 1];
-    busname_to_bus[ptr_bus->name] = ptr_bus;
+    busname_to_bus_[ptr_bus->name] = ptr_bus;
 }
 
 Stop* TransportCatalogue::GetStopByName(std::string_view stop_name) const
@@ -19,7 +19,12 @@ Stop* TransportCatalogue::GetStopByName(std::string_view stop_name) const
     return stopname_to_stop_.at(stop_name);
 }
 
-Bus* TransportCatalogue::GetBusByName(std::string_view) const
+Bus* TransportCatalogue::GetBusByName(std::string_view bus_name) const
 {
-    //отсюда
+    Bus* bus_ptr = nullptr;
+    if(auto iter = busname_to_bus_.find(bus_name); iter != busname_to_bus_.end())
+    {
+        bus_ptr = busname_to_bus_.at(bus_name);
+    }
+    return bus_ptr;
 }
