@@ -81,7 +81,7 @@ std::pair<RouteType, std::vector<std::string_view>> ParseRoute(std::string_view 
     std::vector<std::string_view> results(stops.begin(), stops.end());
     results.insert(results.end(), std::next(stops.rbegin()), stops.rend());
 
-    return {RouteType::ThereAndback, results};
+    return {RouteType::ThereAndBack, results};
 }
 
 CommandDescription ParseCommandDescription(std::string_view line)
@@ -122,13 +122,7 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
 {
     using namespace std::literals;
 
-    std::sort(commands_.begin(), commands_.end(),
-    [](const CommandDescription& lhs, const CommandDescription& rhs){
-        if(lhs.command == "Stop") return true;
-        if (lhs.command == "Bus" && rhs.command == "Stop") return false;
-        if (lhs.command == "Bus" && rhs.command == "Bus") return lhs.command < rhs.command;
-    });
-
+    //обработка запросов на добавление остановок
     for(const CommandDescription& command : commands_)
     {
         if(command.command == "Stop"s)
@@ -136,6 +130,11 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
             Stop stop{command.id, ParseCoordinates(command.description)};
             catalogue.AddStop(std::move(stop));
         }
+    }
+
+    //обработка запросов на добавление маршрутов
+    for(const CommandDescription& command : commands_)
+    {
         if (command.command == "Bus"s)
         {
             auto [type, parsed_stops] = ParseRoute(command.description);

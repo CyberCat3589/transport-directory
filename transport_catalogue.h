@@ -15,7 +15,7 @@ struct Stop
 enum class RouteType
 {
     Ring, //кольцевой маршрут
-    ThereAndback //маршрут туда-обратно
+    ThereAndBack //маршрут туда-обратно
 };
 
 struct Bus
