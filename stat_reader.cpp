@@ -24,13 +24,6 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
         std::unordered_set unique_stops(bus_stops.cbegin(), bus_stops.cend());
         int unique_stops_count = unique_stops.size(); //кол-во уникальных остановок
 
-        /*
-        //дополнение маршрута путем в обратную сторону
-        if(find_bus->type == RouteType::ThereAndBack)
-        {
-            bus_stops.insert(bus_stops.end(), std::next(bus_stops.rbegin()), bus_stops.rend());
-        }*/
-
         //расчёт длины маршрута
         double route_length = 0;
         for(auto it = bus_stops.begin(); it != std::prev(bus_stops.end(), 1); ++it)

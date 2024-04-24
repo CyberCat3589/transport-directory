@@ -12,17 +12,10 @@ struct Stop
     Coordinates coordinates;
 };
 
-enum class RouteType
-{
-    Ring, //кольцевой маршрут
-    ThereAndBack //маршрут туда-обратно
-};
-
 struct Bus
 {
     std::string name;
     std::vector<Stop*> stops;
-    RouteType type;
 };
 
 class TransportCatalogue

@@ -70,18 +70,18 @@ std::vector<std::string_view> Split(std::string_view string, char delim)
  * Для кольцевого маршрута (A>B>C>A) возвращает массив названий остановок [A,B,C,A]
  * Для некольцевого маршрута (A-B-C-D) возвращает массив названий остановок [A,B,C,D,C,B,A]
  */
-std::pair<RouteType, std::vector<std::string_view>> ParseRoute(std::string_view route)
+std::vector<std::string_view> ParseRoute(std::string_view route)
 {
     if (route.find('>') != route.npos)
     {
-        return {RouteType::Ring, Split(route, '>')} ;
+        return Split(route, '>');
     }
 
     auto stops = Split(route, '-');
     std::vector<std::string_view> results(stops.begin(), stops.end());
     results.insert(results.end(), std::next(stops.rbegin()), stops.rend());
 
-    return {RouteType::ThereAndBack, results};
+    return results;
 }
 
 CommandDescription ParseCommandDescription(std::string_view line)
@@ -137,15 +137,14 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
     {
         if (command.command == "Bus"s)
         {
-            auto [type, parsed_stops] = ParseRoute(command.description);
-            std::vector<std::string_view> route = parsed_stops;
+            std::vector<std::string_view> route = ParseRoute(command.description);
 
             std::vector<Stop*> stops;
             for (const auto stop_name : route)
             {
                 stops.push_back(catalogue.GetStopByName(stop_name));
             }
-            Bus bus{command.id, stops, type};
+            Bus bus{command.id, stops};
             catalogue.AddBus(std::move(bus));
         }
     }
