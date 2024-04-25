@@ -6,6 +6,8 @@
 #include "geo.h"
 #include "transport_catalogue.h"
 
+namespace transport_catalogue::input_reader
+{
 struct CommandDescription
 {
     // Определяет, задана ли команда (поле command непустое)
@@ -40,3 +42,4 @@ public:
 private:
     std::vector<CommandDescription> commands_;
 };
+}

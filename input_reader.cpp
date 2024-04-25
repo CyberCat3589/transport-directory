@@ -7,7 +7,7 @@
 /**
  * Парсит строку вида "10.123,  -30.1837" и возвращает пару координат (широта, долгота)
  */
-Coordinates ParseCoordinates(std::string_view str)
+transport_catalogue::Coordinates ParseCoordinates(std::string_view str)
 {
     static const double nan = std::nan("");
 
@@ -84,7 +84,7 @@ std::vector<std::string_view> ParseRoute(std::string_view route)
     return results;
 }
 
-CommandDescription ParseCommandDescription(std::string_view line)
+transport_catalogue::input_reader::CommandDescription ParseCommandDescription(std::string_view line)
 {
     auto colon_pos = line.find(':');
     if (colon_pos == line.npos)
@@ -109,7 +109,7 @@ CommandDescription ParseCommandDescription(std::string_view line)
             std::string(line.substr(colon_pos + 1))};
 }
 
-void InputReader::ParseLine(std::string_view line)
+void transport_catalogue::input_reader::InputReader::ParseLine(std::string_view line)
 {
     auto command_description = ParseCommandDescription(line);
     if (command_description)
@@ -118,7 +118,7 @@ void InputReader::ParseLine(std::string_view line)
     }
 }
 
-void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) const
+void transport_catalogue::input_reader::InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) const
 {
     using namespace std::literals;
 

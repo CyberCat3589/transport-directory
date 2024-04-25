@@ -6,6 +6,8 @@
 
 #include "geo.h"
 
+namespace transport_catalogue
+{
 struct Bus;
 
 struct Stop
@@ -35,3 +37,4 @@ class TransportCatalogue
     std::unordered_map<std::string_view, Stop*> stopname_to_stop_;
     std::unordered_map<std::string_view, Bus*> busname_to_bus_;
 };
+}

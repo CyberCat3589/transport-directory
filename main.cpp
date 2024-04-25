@@ -8,13 +8,13 @@ using namespace std;
 
 int main()
 {
-    TransportCatalogue catalogue;
+    transport_catalogue::TransportCatalogue catalogue;
 
     int base_request_count;
     cin >> base_request_count >> ws;
 
     {
-        InputReader reader;
+        transport_catalogue::input_reader::InputReader reader;
         for (int i = 0; i < base_request_count; ++i)
         {
             string line;
@@ -30,6 +30,6 @@ int main()
     {
         string line;
         getline(cin, line);
-        ParseAndPrintStat(catalogue, line, cout);
+        transport_catalogue::stat_reader::ParseAndPrintStat(catalogue, line, cout);
     }
 }

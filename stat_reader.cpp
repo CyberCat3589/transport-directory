@@ -4,7 +4,9 @@
 #include <vector>
 #include <algorithm>
 
-void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output)
+using namespace transport_catalogue;
+
+void transport_catalogue::stat_reader::ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output)
 {
     using namespace std::literals;
 

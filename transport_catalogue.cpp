@@ -1,5 +1,7 @@
 #include "transport_catalogue.h"
 
+using namespace transport_catalogue;
+
 void TransportCatalogue::AddStop(Stop&& stop)
 {
     stops_.push_back(std::move(stop));
