@@ -127,7 +127,7 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
     {
         if(command.command == "Stop"s)
         {
-            Stop stop{command.id, ParseCoordinates(command.description)};
+            Stop stop{command.id, ParseCoordinates(command.description), {}};
             catalogue.AddStop(std::move(stop));
         }
     }
@@ -139,13 +139,20 @@ void InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) 
         {
             std::vector<std::string_view> route = ParseRoute(command.description);
 
-            std::vector<Stop*> stops;
+            Bus bus{command.id, {}};
+            Bus* bus_ptr = catalogue.AddBus(std::move(bus));
+
+            Stop* stop;
             for (const auto stop_name : route)
             {
-                stops.push_back(catalogue.GetStopByName(stop_name));
+                stop = catalogue.GetStopByName(stop_name);
+                bus_ptr->stops.push_back(stop);
+
+                if(std::find(stop->buses.begin(), stop->buses.end(), bus_ptr) == stop->buses.end())
+                {
+                    stop->buses.push_back(bus_ptr);
+                }
             }
-            Bus bus{command.id, stops};
-            catalogue.AddBus(std::move(bus));
         }
     }
 }

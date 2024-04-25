@@ -6,10 +6,13 @@
 
 #include "geo.h"
 
+struct Bus;
+
 struct Stop
 {
     std::string name;
     Coordinates coordinates;
+    std::vector<Bus*> buses;
 };
 
 struct Bus
@@ -22,7 +25,7 @@ class TransportCatalogue
 {
   public:
     void AddStop(Stop&& stop);
-    void AddBus(Bus&& bus);
+    Bus* AddBus(Bus&& bus);
     Stop* GetStopByName(std::string_view stop_name) const;
     Bus* GetBusByName(std::string_view bus_name) const;
 

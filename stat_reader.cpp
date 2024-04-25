@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <unordered_set>
 #include <vector>
+#include <algorithm>
 
 void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output)
 {
@@ -46,5 +47,34 @@ void ParseAndPrintStat(const TransportCatalogue& transport_catalogue, std::strin
     }
     else if (query_type == "Stop")
     {
+        Stop* stop = transport_catalogue.GetStopByName(request);
+        if(stop == nullptr)
+        {
+            output << "Stop "s << request << ": not found"s << '\n';
+        }
+        else
+        {
+            if(stop->buses.empty())
+            {
+                output << "Stop "s << stop->name << ": no buses"s << '\n';
+            }
+            else
+            {
+                output << "Stop "s << stop->name << ": buses"s;
+
+                std::vector<Bus*>& buses = stop->buses;
+                std::sort(buses.begin(), buses.end(),
+                [](Bus* lhs, Bus* rhs)
+                {
+                    return lhs->name < rhs->name;
+                });
+
+                for(auto bus : buses)
+                {
+                    output << " "s << bus->name;
+                }
+                output << '\n';
+            }
+        }
     }
 }
