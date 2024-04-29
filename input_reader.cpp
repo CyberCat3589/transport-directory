@@ -128,7 +128,7 @@ void transport_catalogue::input_reader::InputReader::ApplyCommands([[maybe_unuse
         if(command.command == "Stop"s)
         {
             Stop stop{command.id, ParseCoordinates(command.description), {}};
-            catalogue.AddStop(std::move(stop));
+            catalogue.AddStop(stop);
         }
     }
 
@@ -140,7 +140,7 @@ void transport_catalogue::input_reader::InputReader::ApplyCommands([[maybe_unuse
             std::vector<std::string_view> route = ParseRoute(command.description);
 
             Bus bus{command.id, {}};
-            Bus* bus_ptr = catalogue.AddBus(std::move(bus));
+            Bus* bus_ptr = catalogue.AddBus(bus);
 
             Stop* stop;
             for (const auto stop_name : route)

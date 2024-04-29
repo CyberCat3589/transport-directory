@@ -2,6 +2,7 @@
 #include <deque>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "geo.h"
@@ -26,12 +27,17 @@ struct Bus
 class TransportCatalogue
 {
   public:
-    void AddStop(Stop&& stop);
-    Bus* AddBus(Bus&& bus);
+    void AddStop(const Stop& stop);
+    Bus* AddBus(const Bus& bus);
     Stop* GetStopByName(std::string_view stop_name) const;
     Bus* GetBusByName(std::string_view bus_name) const;
 
+    std::tuple<size_t, size_t, double> GetBusStatistics(Bus* bus) const;
+    std::vector<Bus*> GetStopBuses(Stop* stop) const;
+
   private:
+    double CalculateDistance(Bus* bus) const;
+
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
     std::unordered_map<std::string_view, Stop*> stopname_to_stop_;
