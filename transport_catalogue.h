@@ -24,6 +24,14 @@ struct Bus
     std::vector<Stop*> stops;
 };
 
+struct BusStatistics
+{
+    std::string_view name;
+    size_t stops_count;
+    size_t unique_stops_count;
+    double route_length;
+};
+
 class TransportCatalogue
 {
   public:
@@ -32,11 +40,11 @@ class TransportCatalogue
     Stop* GetStopByName(std::string_view stop_name) const;
     Bus* GetBusByName(std::string_view bus_name) const;
 
-    std::tuple<size_t, size_t, double> GetBusStatistics(Bus* bus) const;
-    std::vector<Bus*> GetStopBuses(Stop* stop) const;
+    BusStatistics GetBusStatistics(std::string_view bus_name) const;
+    std::vector<Bus*> GetStopBuses(std::string_view stop_name) const;
 
   private:
-    double CalculateDistance(Bus* bus) const;
+    double CalculateDistance(std::string_view bus_name) const;
 
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;

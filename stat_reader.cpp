@@ -5,6 +5,24 @@
 using namespace transport_catalogue;
 using namespace std::literals;
 
+std::ostream& operator<<(std::ostream& out, BusStatistics bus_stat)
+{
+    out << "Bus "s << bus_stat.name << ": "s << bus_stat.stops_count << " stops on route, "s 
+    << bus_stat.unique_stops_count << " unique stops, "s 
+    << std::setprecision(6) << bus_stat.route_length << " route length"s << '\n';
+    return out;
+}
+
+std::ostream& operator<<(std::ostream& out, std::vector<Bus*> buses)
+{
+    for (auto bus : buses)
+    {
+        out << " "s << bus->name;
+    }
+    out << '\n';
+    return out;
+}
+
 void PrintBus(const TransportCatalogue& transport_catalogue, std::string_view request, std::ostream& output)
 {
     Bus* find_bus = transport_catalogue.GetBusByName(request);
@@ -14,10 +32,9 @@ void PrintBus(const TransportCatalogue& transport_catalogue, std::string_view re
     }
     else
     {
-        auto [stops_count, unique_stops_count, route_length] = transport_catalogue.GetBusStatistics(find_bus);
+        BusStatistics bus_stat = transport_catalogue.GetBusStatistics(find_bus->name);
 
-        output << "Bus "s << request << ": "s << stops_count << " stops on route, "s << unique_stops_count << " unique stops, "s
-               << std::setprecision(6) << route_length << " route length"s << '\n';
+        output << bus_stat;
     }
 }
 
@@ -30,20 +47,14 @@ void PrintStop(const TransportCatalogue& transport_catalogue, std::string_view r
     }
     else
     {
-        std::vector<Bus*> buses = transport_catalogue.GetStopBuses(stop);
+        std::vector<Bus*> buses = transport_catalogue.GetStopBuses(stop->name);
         if (buses.empty())
         {
             output << "Stop "s << request << ": no buses"s << '\n';
         }
         else
         {
-            output << "Stop "s << request << ": buses"s;
-
-            for (auto bus : buses)
-            {
-                output << " "s << bus->name;
-            }
-            output << '\n';
+            output << "Stop "s << request << ": buses"s << buses;
         }
     }
 }
