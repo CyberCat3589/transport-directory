@@ -1,5 +1,5 @@
-*.vscode
-*.vs
+.vscode/
+.vs/
 # Prerequisites
 *.d
 
