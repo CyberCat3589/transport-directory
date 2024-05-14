@@ -18,6 +18,15 @@ Bus* TransportCatalogue::AddBus(const Bus& bus)
     return ptr_bus;
 }
 
+void TransportCatalogue::AddDistance(std::vector<Distance> distances)
+{
+    for(auto distance : distances)
+    {
+        auto stops_pair = std::make_pair(distance.from, distance.to);
+        distances_.insert(DistanceMap::value_type(stops_pair, distance.distance));
+    }
+}
+
 Stop* TransportCatalogue::GetStopByName(std::string_view stop_name) const
 {
     Stop* stop_ptr = nullptr;
