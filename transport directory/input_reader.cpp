@@ -22,7 +22,9 @@ transport_catalogue::Coordinates ParseCoordinates(std::string_view str)
     auto not_space2 = str.find_first_not_of(' ', comma + 1);
 
     double lat = std::stod(std::string(str.substr(not_space, comma - not_space)));
-    double lng = std::stod(std::string(str.substr(not_space2)));
+
+    auto comma2 = str.find(',', comma + 1);
+    double lng = std::stod(std::string(str.substr(not_space2, comma2 - not_space2)));
 
     return {lat, lng};
 }
