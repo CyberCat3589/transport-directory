@@ -120,6 +120,47 @@ void transport_catalogue::input_reader::InputReader::ParseLine(std::string_view 
     }
 }
 
+std::pair<int, std::string_view> ParseStopAndDistance(std::string_view str)
+{
+    int pos_meters = str.find('m');
+
+    int stop_pos = str.find_last_of(' ');//исправить
+
+    int distance = std::stoi(std::string(str.substr(0, pos_meters)));
+
+    std::string_view destination = str.substr(stop_pos + 1);
+
+    return {distance, destination};
+}
+
+std::vector<std::pair<int, std::string_view>> ParseDistances(std::string_view str)
+{
+    //отсекаем от строки координаты
+    size_t comma = str.find(',', 0);
+    size_t comma2 = str.find(',', comma + 1);
+    std::string_view dist_str = str.substr(comma2 + 1);
+
+    dist_str = Trim(dist_str);
+
+    std::vector<std::pair<int, std::string_view>> distances;
+
+    //парсинг расстояний и остановок
+    if(dist_str.find(',') == dist_str.npos)
+    {
+        distances.push_back(ParseStopAndDistance(dist_str));
+    }
+    else
+    {
+        std::vector<std::string_view> raw_distances = Split(dist_str, ',');
+        for(auto raw_dist : raw_distances)
+        {
+            distances.push_back(ParseStopAndDistance(raw_dist));
+        }
+    }
+
+    return distances;
+}
+
 void transport_catalogue::input_reader::InputReader::ApplyCommands([[maybe_unused]] TransportCatalogue& catalogue) const
 {
     using namespace std::literals;
