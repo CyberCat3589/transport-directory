@@ -34,8 +34,8 @@ struct BusStatistics
 
 struct Distance
 {
-  Stop* from;
-  Stop* to;
+  std::string from;
+  std::string to;
   int distance;
 };
 

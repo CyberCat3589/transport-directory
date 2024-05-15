@@ -22,7 +22,9 @@ void TransportCatalogue::AddDistance(std::vector<Distance> distances)
 {
     for(auto distance : distances)
     {
-        auto stops_pair = std::make_pair(distance.from, distance.to);
+        Stop* from = GetStopByName(distance.from);
+        Stop* to = GetStopByName(distance.to);
+        auto stops_pair = std::make_pair(from, to);
         distances_.insert(DistanceMap::value_type(stops_pair, distance.distance));
     }
 }
