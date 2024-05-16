@@ -122,13 +122,17 @@ void transport_catalogue::input_reader::InputReader::ParseLine(std::string_view 
 
 std::pair<int, std::string_view> ParseStopAndDistance(std::string_view str)
 {
-    int pos_meters = str.find('m');
+    using namespace std::literals;
 
-    int stop_pos = str.find_last_of(' ');//исправить
+    size_t pos_meters = str.find('m');
+
+    size_t pos_to = str.find("to"s, pos_meters);
+
+    size_t stop_pos = str.find_first_not_of(' ', pos_to + 2);
 
     int distance = std::stoi(std::string(str.substr(0, pos_meters)));
 
-    std::string_view destination = str.substr(stop_pos + 1);
+    std::string_view destination = str.substr(stop_pos);
 
     return {distance, destination};
 }
@@ -174,6 +178,20 @@ void transport_catalogue::input_reader::InputReader::ApplyCommands([[maybe_unuse
             catalogue.AddStop(stop);
         }
     }
+
+    //добавление расстояний до остановок
+    std::vector<Distance> distances;
+    for(const CommandDescription& command : commands_)
+    {
+        std::vector<std::pair<int, std::string_view>> to_dist = ParseDistances(command.description);
+        for(auto dist : to_dist)
+        {
+            Distance distance{command.id, std::string(dist.second), dist.first};
+            distances.push_back(distance);
+        }
+    }
+
+    catalogue.AddDistances(distances);
 
     //обработка запросов на добавление маршрутов
     for(const CommandDescription& command : commands_)

@@ -61,7 +61,7 @@ class TransportCatalogue
     Bus* AddBus(const Bus& bus);
     Stop* GetStopByName(std::string_view stop_name) const;
     Bus* GetBusByName(std::string_view bus_name) const;
-    void AddDistance(std::vector<Distance> distances);
+    void AddDistances(std::vector<Distance> distances);
 
     BusStatistics GetBusStatistics(std::string_view bus_name) const;
     std::vector<Bus*> GetStopBuses(std::string_view stop_name) const;

@@ -18,7 +18,7 @@ Bus* TransportCatalogue::AddBus(const Bus& bus)
     return ptr_bus;
 }
 
-void TransportCatalogue::AddDistance(std::vector<Distance> distances)
+void TransportCatalogue::AddDistances(std::vector<Distance> distances)
 {
     for(auto distance : distances)
     {
