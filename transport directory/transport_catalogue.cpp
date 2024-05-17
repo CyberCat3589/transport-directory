@@ -20,12 +20,15 @@ Bus* TransportCatalogue::AddBus(const Bus& bus)
 
 void TransportCatalogue::AddDistances(std::vector<Distance> distances)
 {
-    for(auto distance : distances)
+    if(!distances.empty())
     {
-        Stop* from = GetStopByName(distance.from);
-        Stop* to = GetStopByName(distance.to);
-        auto stops_pair = std::make_pair(from, to);
-        distances_.insert(DistanceMap::value_type(stops_pair, distance.distance));
+        for(auto distance : distances)
+        {
+            Stop* from = GetStopByName(distance.from);
+            Stop* to = GetStopByName(distance.to);
+            auto stops_pair = std::make_pair(from, to);
+            distances_.insert(DistanceMap::value_type(stops_pair, distance.distance));
+        }
     }
 }
 
@@ -49,10 +52,32 @@ Bus* TransportCatalogue::GetBusByName(std::string_view bus_name) const
     return bus_ptr;
 }
 
-double TransportCatalogue::CalculateDistance(std::string_view bus_name) const
+int TransportCatalogue::CalculateFactDistance(Stop* from, Stop* to) const
+{
+    double length = 0;
+
+    auto forward_pair = std::make_pair(from, to);
+    auto reverce_pair = std::make_pair(to, from);
+
+    if(auto it = distances_.find(forward_pair); it != distances_.end())
+    {
+        length = distances_.at(forward_pair);
+    }
+    else if(auto it = distances_.find(reverce_pair); it != distances_.end())
+    {
+        length = distances_.at(reverce_pair);
+    }
+
+    return length;
+}
+
+std::pair<int, double> TransportCatalogue::CalculateRouteDistance(std::string_view bus_name) const
 {
     Bus* bus = busname_to_bus_.at(bus_name);
-    double route_length = 0;
+    
+    int fact_route_length = 0;
+    double geo_route_length = 0;
+
     std::vector<Stop*>& stops = bus->stops;
     for (auto it = stops.begin(); it != std::prev(stops.end(), 1); ++it)
     {
@@ -60,9 +85,11 @@ double TransportCatalogue::CalculateDistance(std::string_view bus_name) const
         Stop* stop1 = *it;
         Stop* stop2 = *next_stop;
 
-        route_length += ComputeDistance(stop1->coordinates, stop2->coordinates);
+        fact_route_length += CalculateFactDistance(stop1, stop2);
+        geo_route_length += ComputeDistance(stop1->coordinates, stop2->coordinates);
     }
-    return route_length;
+
+    return std::make_pair(fact_route_length, geo_route_length);
 }
 
 BusStatistics TransportCatalogue::GetBusStatistics(std::string_view bus_name) const
@@ -75,10 +102,12 @@ BusStatistics TransportCatalogue::GetBusStatistics(std::string_view bus_name) co
     std::unordered_set unique_stops(bus_stops.cbegin(), bus_stops.cend());
     size_t unique_stops_count = unique_stops.size();  // кол-во уникальных остановок
 
-    // длина маршрута
-    double route_length = CalculateDistance(bus->name);
+    auto [fact_route_length, geo_route_length] = CalculateRouteDistance(bus->name);
 
-    return BusStatistics{bus_name, stops_count, unique_stops_count, route_length};
+    //извилистость пути
+    double curvature = fact_route_length / geo_route_length;
+
+    return BusStatistics{bus_name, stops_count, unique_stops_count, fact_route_length, curvature};
 }
 
 std::vector<Bus*> TransportCatalogue::GetStopBuses(std::string_view stop_name) const

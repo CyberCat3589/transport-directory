@@ -148,6 +148,8 @@ std::vector<std::pair<int, std::string_view>> ParseDistances(std::string_view st
 
     std::vector<std::pair<int, std::string_view>> distances;
 
+    if(str.find_first_not_of(' ') == str.npos) return distances;
+
     //парсинг расстояний и остановок
     if(dist_str.find(',') == dist_str.npos)
     {
@@ -183,14 +185,19 @@ void transport_catalogue::input_reader::InputReader::ApplyCommands([[maybe_unuse
     std::vector<Distance> distances;
     for(const CommandDescription& command : commands_)
     {
-        std::vector<std::pair<int, std::string_view>> to_dist = ParseDistances(command.description);
-        for(auto dist : to_dist)
+        if(command.command == "Stop")
         {
-            Distance distance{command.id, std::string(dist.second), dist.first};
-            distances.push_back(distance);
+            std::vector<std::pair<int, std::string_view>> to_dist = ParseDistances(command.description);
+            if(!to_dist.empty())
+            {
+                for(auto dist : to_dist)
+                {
+                    Distance distance{command.id, std::string(dist.second), dist.first};
+                    distances.push_back(distance);
+                }
+            }
         }
     }
-
     catalogue.AddDistances(distances);
 
     //обработка запросов на добавление маршрутов

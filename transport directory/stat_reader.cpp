@@ -9,7 +9,8 @@ std::ostream& operator<<(std::ostream& out, BusStatistics bus_stat)
 {
     out << "Bus "s << bus_stat.name << ": "s << bus_stat.stops_count << " stops on route, "s 
     << bus_stat.unique_stops_count << " unique stops, "s 
-    << std::setprecision(6) << bus_stat.route_length << " route length"s << '\n';
+    << std::setprecision(6) << bus_stat.route_length << " route length, "s 
+    << bus_stat.curvature << " curvature"s << '\n';
     return out;
 }
 
