@@ -1,11 +1,12 @@
 #include "stat_reader.h"
 #include <iomanip>
 #include <vector>
+#include <algorithm>
 
 using namespace transport_catalogue;
 using namespace std::literals;
 
-std::ostream& operator<<(std::ostream& out, BusStatistics bus_stat)
+std::ostream& operator<<(std::ostream& out, BusInfo bus_stat)
 {
     out << "Bus "s << bus_stat.name << ": "s << bus_stat.stops_count << " stops on route, "s 
     << bus_stat.unique_stops_count << " unique stops, "s 
@@ -33,7 +34,7 @@ void PrintBus(const TransportCatalogue& transport_catalogue, std::string_view re
     }
     else
     {
-        BusStatistics bus_stat = transport_catalogue.GetBusStatistics(find_bus->name);
+        BusInfo bus_stat = transport_catalogue.GetBusStatistics(find_bus->name);
 
         output << bus_stat;
     }
@@ -48,14 +49,19 @@ void PrintStop(const TransportCatalogue& transport_catalogue, std::string_view r
     }
     else
     {
-        std::vector<Bus*> buses = transport_catalogue.GetStopBuses(stop->name);
+        std::unordered_set<Bus*> buses = transport_catalogue.GetStopBuses(stop->name);
         if (buses.empty())
         {
             output << "Stop "s << request << ": no buses"s << '\n';
         }
         else
         {
-            output << "Stop "s << request << ": buses"s << buses;
+            std::vector<Bus*> vec_buses(buses.begin(), buses.end());
+            std::sort(vec_buses.begin(), vec_buses.end(), [](Bus* lhs, Bus* rhs)
+            {
+                return lhs->name < rhs->name;
+            });
+            output << "Stop "s << request << ": buses"s << vec_buses;
         }
     }
 }

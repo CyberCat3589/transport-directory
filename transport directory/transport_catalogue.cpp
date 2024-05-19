@@ -6,30 +6,38 @@ using namespace transport_catalogue;
 void TransportCatalogue::AddStop(const Stop& stop)
 {
     stops_.push_back(stop);
-    Stop* ptr_stop = &stops_[stops_.size() - 1];
+    Stop* ptr_stop = &stops_.back();
     stopname_to_stop_[ptr_stop->name] = ptr_stop;
 }
 
-Bus* TransportCatalogue::AddBus(const Bus& bus)
+Bus* TransportCatalogue::AddBus(const Bus& bus, const std::vector<std::string_view>& stops)
 {
     buses_.push_back(bus);
-    Bus* ptr_bus = &buses_[buses_.size() - 1];
-    busname_to_bus_[ptr_bus->name] = ptr_bus;
-    return ptr_bus;
+    Bus* bus_ptr = &buses_.back();
+    busname_to_bus_[bus_ptr->name] = bus_ptr;
+    
+    Stop* stop;
+    for (const auto stop_name : stops)
+    {
+        stop = GetStopByName(stop_name);
+        bus_ptr->stops.push_back(stop);
+
+        AddBusToStop(stop->name, bus_ptr);
+    }
+    return bus_ptr;
 }
 
-void TransportCatalogue::AddDistances(std::vector<Distance> distances)
+void TransportCatalogue::AddDistance(std::string from, std::string to, int distance)
 {
-    if(!distances.empty())
-    {
-        for(auto distance : distances)
-        {
-            Stop* from = GetStopByName(distance.from);
-            Stop* to = GetStopByName(distance.to);
-            auto stops_pair = std::make_pair(from, to);
-            distances_.insert(DistanceMap::value_type(stops_pair, distance.distance));
-        }
-    }
+    Stop* from_ptr = GetStopByName(from);
+    Stop* to_ptr = GetStopByName(to);
+    auto stops_pair = std::make_pair(from_ptr, to_ptr);
+    distances_.insert(std::unordered_map<std::pair<Stop*, Stop*>, int, DistanceHasher>::value_type(stops_pair, distance));
+}
+
+void TransportCatalogue::AddBusToStop(std::string_view stop_name, Bus* bus)
+{
+    stop_to_buses_[stop_name].insert(bus);
 }
 
 Stop* TransportCatalogue::GetStopByName(std::string_view stop_name) const
@@ -71,7 +79,7 @@ int TransportCatalogue::CalculateFactDistance(Stop* from, Stop* to) const
     return length;
 }
 
-std::pair<int, double> TransportCatalogue::CalculateRouteDistance(std::string_view bus_name) const
+RouteDistance TransportCatalogue::CalculateRouteDistance(std::string_view bus_name) const
 {
     Bus* bus = busname_to_bus_.at(bus_name);
     
@@ -89,10 +97,10 @@ std::pair<int, double> TransportCatalogue::CalculateRouteDistance(std::string_vi
         geo_route_length += ComputeDistance(stop1->coordinates, stop2->coordinates);
     }
 
-    return std::make_pair(fact_route_length, geo_route_length);
+    return {bus->name, fact_route_length, geo_route_length};
 }
 
-BusStatistics TransportCatalogue::GetBusStatistics(std::string_view bus_name) const
+BusInfo TransportCatalogue::GetBusStatistics(std::string_view bus_name) const
 {
     Bus* bus = busname_to_bus_.at(bus_name);
     std::vector<Stop*>& bus_stops = bus->stops;
@@ -102,22 +110,20 @@ BusStatistics TransportCatalogue::GetBusStatistics(std::string_view bus_name) co
     std::unordered_set unique_stops(bus_stops.cbegin(), bus_stops.cend());
     size_t unique_stops_count = unique_stops.size();  // кол-во уникальных остановок
 
-    auto [fact_route_length, geo_route_length] = CalculateRouteDistance(bus->name);
+    RouteDistance route_distance = CalculateRouteDistance(bus->name);
 
     //извилистость пути
-    double curvature = fact_route_length / geo_route_length;
+    double curvature = route_distance.fact_distance / route_distance.geo_distance;
 
-    return BusStatistics{bus_name, stops_count, unique_stops_count, fact_route_length, curvature};
+    return BusInfo{bus_name, stops_count, unique_stops_count, route_distance.fact_distance, curvature};
 }
 
-std::vector<Bus*> TransportCatalogue::GetStopBuses(std::string_view stop_name) const
+std::unordered_set<Bus*> TransportCatalogue::GetStopBuses(std::string_view stop_name) const
 {
-    Stop* stop = stopname_to_stop_.at(stop_name);
-    std::vector<Bus*>& buses = stop->buses;
-    if(!buses.empty())
+    std::unordered_set<Bus*> buses;
+    if(auto it = stop_to_buses_.find(stop_name); it != stop_to_buses_.end())
     {
-        std::sort(buses.begin(), buses.end(), [](Bus* lhs, Bus* rhs) { return lhs->name < rhs->name; });
+        buses = stop_to_buses_.at(stop_name);
     }
-    
     return buses;
 }

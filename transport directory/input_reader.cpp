@@ -120,7 +120,7 @@ void transport_catalogue::input_reader::InputReader::ParseLine(std::string_view 
     }
 }
 
-std::pair<int, std::string_view> ParseStopAndDistance(std::string_view str)
+std::pair<std::string_view, int> ParseStopAndDistance(std::string_view str)
 {
     using namespace std::literals;
 
@@ -134,10 +134,10 @@ std::pair<int, std::string_view> ParseStopAndDistance(std::string_view str)
 
     std::string_view destination = str.substr(stop_pos);
 
-    return {distance, destination};
+    return {destination, distance};
 }
 
-std::vector<std::pair<int, std::string_view>> ParseDistances(std::string_view str)
+std::vector<std::pair<std::string_view, int>> ParseDistances(std::string_view str)
 {
     //отсекаем от строки координаты
     size_t comma = str.find(',', 0);
@@ -146,7 +146,7 @@ std::vector<std::pair<int, std::string_view>> ParseDistances(std::string_view st
 
     dist_str = Trim(dist_str);
 
-    std::vector<std::pair<int, std::string_view>> distances;
+    std::vector<std::pair<std::string_view, int>> distances;
 
     if(str.find_first_not_of(' ') == str.npos) return distances;
 
@@ -176,29 +176,26 @@ void transport_catalogue::input_reader::InputReader::ApplyCommands([[maybe_unuse
     {
         if(command.command == "Stop"s)
         {
-            Stop stop{command.id, ParseCoordinates(command.description), {}};
+            Stop stop{command.id, ParseCoordinates(command.description)};
             catalogue.AddStop(stop);
         }
     }
 
     //добавление расстояний до остановок
-    std::vector<Distance> distances;
     for(const CommandDescription& command : commands_)
     {
         if(command.command == "Stop")
         {
-            std::vector<std::pair<int, std::string_view>> to_dist = ParseDistances(command.description);
+            std::vector<std::pair<std::string_view, int>> to_dist = ParseDistances(command.description);
             if(!to_dist.empty())
             {
                 for(auto dist : to_dist)
                 {
-                    Distance distance{command.id, std::string(dist.second), dist.first};
-                    distances.push_back(distance);
+                    catalogue.AddDistance(command.id, std::string(dist.first), dist.second);
                 }
             }
         }
     }
-    catalogue.AddDistances(distances);
 
     //обработка запросов на добавление маршрутов
     for(const CommandDescription& command : commands_)
@@ -208,19 +205,7 @@ void transport_catalogue::input_reader::InputReader::ApplyCommands([[maybe_unuse
             std::vector<std::string_view> route = ParseRoute(command.description);
 
             Bus bus{command.id, {}};
-            Bus* bus_ptr = catalogue.AddBus(bus);
-
-            Stop* stop;
-            for (const auto stop_name : route)
-            {
-                stop = catalogue.GetStopByName(stop_name);
-                bus_ptr->stops.push_back(stop);
-
-                if(std::find(stop->buses.begin(), stop->buses.end(), bus_ptr) == stop->buses.end())
-                {
-                    stop->buses.push_back(bus_ptr);
-                }
-            }
+            catalogue.AddBus(bus, route);
         }
     }
 }

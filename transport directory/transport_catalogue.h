@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
+#include <set>
 
 #include "geo.h"
 
@@ -15,7 +16,6 @@ struct Stop
 {
   std::string name;
   Coordinates coordinates;
-  std::vector<Bus*> buses;
 };
 
 struct Bus
@@ -24,20 +24,13 @@ struct Bus
   std::vector<Stop*> stops;
 };
 
-struct BusStatistics
+struct BusInfo
 {
   std::string_view name;
   size_t stops_count;
   size_t unique_stops_count;
   int route_length;
   double curvature;
-};
-
-struct Distance
-{
-  std::string from;
-  std::string to;
-  int distance;
 };
 
 struct DistanceHasher
@@ -51,30 +44,35 @@ struct DistanceHasher
     }
 };
 
-using StopMap = std::unordered_map<std::string_view, Stop*>;
-using BusMap = std::unordered_map<std::string_view, Bus*>;
-using DistanceMap = std::unordered_map<std::pair<Stop*, Stop*>, int, DistanceHasher>;
+struct RouteDistance
+{
+  std::string_view name;
+  int fact_distance;
+  double geo_distance;
+};
 
 class TransportCatalogue
 {
   public:
     void AddStop(const Stop& stop);
-    Bus* AddBus(const Bus& bus);
+    Bus* AddBus(const Bus& bus, const std::vector<std::string_view>& stops);
     Stop* GetStopByName(std::string_view stop_name) const;
     Bus* GetBusByName(std::string_view bus_name) const;
-    void AddDistances(std::vector<Distance> distances);
+    void AddDistance(std::string from, std::string to, int distance);
 
-    BusStatistics GetBusStatistics(std::string_view bus_name) const;
-    std::vector<Bus*> GetStopBuses(std::string_view stop_name) const;
+    BusInfo GetBusStatistics(std::string_view bus_name) const;
+    std::unordered_set<Bus*> GetStopBuses(std::string_view stop_name) const;
 
   private:
-    std::pair<int, double> CalculateRouteDistance(std::string_view bus_name) const;
+    void AddBusToStop(std::string_view stop_name, Bus* bus);
+    RouteDistance CalculateRouteDistance(std::string_view bus_name) const;
     int CalculateFactDistance(Stop* from, Stop* to) const;
 
     std::deque<Stop> stops_;
     std::deque<Bus> buses_;
-    StopMap stopname_to_stop_;
-    BusMap busname_to_bus_;
-    DistanceMap distances_;
+    std::unordered_map<std::string_view, Stop*> stopname_to_stop_;
+    std::unordered_map<std::string_view, Bus*> busname_to_bus_;
+    std::unordered_map<std::string_view, std::unordered_set<Bus*>> stop_to_buses_;
+    std::unordered_map<std::pair<Stop*, Stop*>, int, DistanceHasher> distances_;
 };
 }
